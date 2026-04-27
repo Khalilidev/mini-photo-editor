@@ -228,7 +228,7 @@ class WebApp:
             self.image_2 = st.sidebar.file_uploader("Please upload image from here:", max_upload_size=10)
             if self.image_2 and self.image is not None:
                 file_bytes = np.asarray(bytearray(self.image_2.read()), dtype=np.uint8)
-                self.source_image_2 = imdecode(file_bytes, 1)
+                self.source_image_2 = cv2.imdecode(file_bytes, 1)
                 col = st.columns(1)
                 with col[0]:
                     alpha = st.sidebar.slider("Alpha :", max_value=1.0, min_value=0.0, value=0.0)
