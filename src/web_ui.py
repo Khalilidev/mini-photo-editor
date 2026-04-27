@@ -1,6 +1,6 @@
+import cv2
 import streamlit as st
 import numpy as np
-from cv2 import imdecode
 from histogram import Histogram
 from transforms import Transform
 from filters import Filters
@@ -9,6 +9,22 @@ from color_space import ColorSpace
 from threshold import Threshold
 from edges import Edges
 from contours import Contours
+def download_image_button(label:str, img_array:np.ndarray, filename:str):
+    """
+    Convert ndarray to jpeg and create the download button.
+    Args:
+        label(str):
+            label for button download.
+        img_array(numpy.ndarray):
+            the source image in numpy array format.
+        filename(str):
+            selected name for downloaded file.
+    """
+    ok, buf = cv2.imencode(".jpg", img_array)
+    st.download_button(label=label,
+                       data=buf.tobytes(),
+                       file_name=filename,
+                       mime="image/jpeg")
 class WebApp:
     """
         Main web-based interface for the Mini Photo Editor application.
@@ -58,7 +74,7 @@ class WebApp:
         self.source_image = None
         if self.image is not None:
             file_bytes = np.asarray(bytearray(self.image.read()), dtype=np.uint8)
-            self.source_image = imdecode(file_bytes, 1)
+            self.source_image = cv2.imdecode(file_bytes, 1)
 
 
 
@@ -126,8 +142,7 @@ class WebApp:
                     with col[0]:
                         st.header("Resized image")
                         st.image(resized_image, channels="BGR")
-                        st.download_button(label="Download Resized image",data=resized_image,
-                                            file_name="resized.jpg", mime="image/jpeg",)
+                        download_image_button("Download Resized image", resized_image, "resized.jpg")
                 if cnv == "Flip":
                     flip = st.sidebar.radio("Select flip type", options=["0", "1", "-1"])
                     if flip == "0":
@@ -136,8 +151,7 @@ class WebApp:
                         with col[0]:
                             st.header(f"Flipped image with {int(flip)}")
                             st.image(flipped_image, channels="BGR")
-                            st.download_button(label="Download Flipped image",data=flipped_image,
-                                               file_name="flipped.jpg", mime="image/jpeg",)
+                            download_image_button("Download Flipped image", flipped_image, "flipped.jpg")
 
                     if flip == "1":
                         flipped_image = transeformed_image.flip(int(flip))
@@ -145,16 +159,15 @@ class WebApp:
                         with col[0]:
                             st.header(f"Flipped image with {int(flip)}")
                             st.image(flipped_image, channels="BGR")
-                            st.download_button(label="Download Flipped image",data=flipped_image,
-                                            file_name="flipped.jpg", mime="image/jpeg",)
+                            download_image_button("Download Flipped image", flipped_image, "flipped.jpg")
+
                     if flip == "-1":
                         flipped_image = transeformed_image.flip(int(flip))
                         col = st.columns(1)
                         with col[0]:
                             st.header(f"Flipped image with {int(flip)}")
                             st.image(flipped_image, channels="BGR")
-                            st.download_button(label="Download Flipped image",data=flipped_image,
-                                            file_name="flipped.jpg", mime="image/jpeg",)
+                            download_image_button("Download Flipped image", flipped_image, "flipped.jpg")
                 if cnv == "Rotate":
                     Degree = st.sidebar.slider("Degree to rotate:", min_value=0,
                                             max_value=360, step=1)
@@ -165,8 +178,7 @@ class WebApp:
                     with col[0]:
                         st.header(f"Rotated image with {Degree} and scale {scale}")
                         st.image(rotated_image, channels="BGR")
-                        st.download_button(label="Download Rotated image",data=rotated_image,
-                                       file_name="rotated.jpg", mime="image/jpeg",)
+                        download_image_button("Download Rotated image", rotated_image, "rotated.jpg")
             else:
                 st.sidebar.error("There is not any image for processing!")
         elif self.option == "Filters":
@@ -187,8 +199,7 @@ class WebApp:
                     with col[0]:
                         st.header(f"Filtered image with kernel size{kernel} use Gaussian filter.")
                         st.image(GB_image, channels="BGR")
-                        st.download_button(label="Download Filtered image",data=GB_image,
-                                       file_name="gaussianblur.jpg", mime="image/jpeg",)
+                        download_image_button("Dowload Filtered image", GB_image, "gaussianblur.jpg")
                 if filter_ == "Normal filter":
                     kernel = st.sidebar.slider("Kernel size :", min_value=1, max_value=49,
                                                value=1, step=2)
@@ -198,8 +209,7 @@ class WebApp:
                     with col[0]:
                         st.header(f"Filtered image with kernel size {kernel} use Normal filter")
                         st.image(NB_image, channels="BGR")
-                        st.download_button(label="Download Filtered image",data=NB_image,
-                                       file_name="normalblur.jpg", mime="image/jpeg",)
+                        download_image_button("Download Filtered image", NB_image, "normalblur.jpg")
                 if filter_ == "Median filter":
                     kernel = st.sidebar.slider("Kernel size :", min_value=1, max_value=49,
                                                value=1, step=2)
@@ -209,8 +219,7 @@ class WebApp:
                     with col[0]:
                         st.header(f"Filtered image with kernel size {kernel} use Median filter")
                         st.image(MB_image, channels="BGR")
-                        st.download_button(label="Download Filtered image",data=MB_image,
-                                       file_name="medianblur.jpg", mime="image/jpeg",)
+                        download_image_button("Download Filtered image", MB_image, "medianblur.jpg")
             else:
                 st.sidebar.error("There is not any image for processing!")
         elif self.option == "Blending":
@@ -227,8 +236,7 @@ class WebApp:
                     blended_image = blend_obj.blending()
                     st.header("Blending images")
                     st.image(blended_image, channels="BGR")
-                    st.download_button(label="Download Blended image",data=blended_image,
-                                       file_name="blended.jpg", mime="image/jpeg",)
+                    download_image_button("Download Blended image", blended_image, "blended.jpg")
             else:
                 st.sidebar.error("There is not any image for processing!")
         elif self.option == "Color Spaces":
@@ -243,12 +251,10 @@ class WebApp:
                     st.header(f"Converted image to {CS}")
                     if CS != "GRAY":
                         st.image(new_image, channels="BGR")
-                        st.download_button(label="Download",data=new_image,
-                                       file_name="image.jpg", mime="image/jpeg",)
+                        download_image_button("Download", new_image, "image.jpg")
                     else:
                         st.image(new_image)
-                        st.download_button(label="Download",data=new_image,
-                                       file_name="image.jpg", mime="image/jpeg",)
+                        download_image_button("Download", new_image, "image.jpg")
             else:
                 st.sidebar.error("There is not any image for processing!")
         elif self.option == "Threshold":
@@ -264,15 +270,13 @@ class WebApp:
                     with col[0]:
                         st.header(f"Binary Thrshold bitween {value} and 255")
                         st.image(th_image)
-                        st.download_button(label="Download Threshold image",data=th_image,
-                                       file_name="threshold.jpg", mime="image/jpeg",)
+                        download_image_button("Download Threshold image", th_image, "threshold.jpg")
                 else:
                     th_image = obj_th.apply_th(th_type=th)
                     with col[0]:
                         st.header(f"{th}")
                         st.image(th_image)
-                        st.download_button(label="Download Thrshold image",data=th_image,
-                                       file_name="threshold.jpg", mime="image/jpeg",)
+                        download_image_button("Download Threshold image", th_image, "threshold.jpg")
             else:
                 st.sidebar.error("There is not any image for processing!")
         elif self.option == "Edges":
@@ -293,8 +297,7 @@ class WebApp:
                 with col[0]:
                     st.header("Edges")
                     st.image(edges)
-                    st.download_button(label="Download Edges",data=edges,
-                                       file_name="edges.jpg", mime="image/jpeg",)
+                    download_image_button("Download Edges", edges, "edges.jpg")
                 with col[1]:
                     st.header("Image")
                     st.image(self.image, channels="BGR")
@@ -321,8 +324,7 @@ class WebApp:
                 with col[1]:
                     st.header("Contours")
                     st.image(image_contour, channels="BGR")
-                    st.download_button(label="Download Contours",data=image_contour,
-                                       file_name="contours.jpg", mime="image/jpeg",)
+                    download_image_button("Download Contours", image_contour, "contours.jpg")
 
             else:
                 st.sidebar.error("There is not any image for processing!")
