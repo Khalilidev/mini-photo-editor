@@ -65,8 +65,8 @@ mini-photo-editor/
 │   ├── color_space.py
 │   ├── threshold.py
 │   ├── edges.py
-│   ├── contours.py
-│   └── requirements.txt
+│   └── contours.py
+├── requirements.txt
 └── README.md
 ```
 
