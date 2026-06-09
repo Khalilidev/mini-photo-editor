@@ -1,3 +1,3 @@
 import os
 if __name__ == "__main__":
-    os.system("streamlit run web_ui.py --server.address=0.0.0.0")
+    os.system("streamlit run src/web_ui.py --server.address=0.0.0.0")
